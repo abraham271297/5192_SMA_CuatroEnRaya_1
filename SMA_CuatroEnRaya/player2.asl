@@ -1,0 +1,110 @@
+// Agent player1 in project SMA_CuatroEnRaya.mas2j
+//Ponte Baquero Oscar y L�pez Alonso Francisco
+
+identificador(player1,1).
+identificador(player2,2).
+identificadorRival(player1,2).
+identificadorRival(player2,1).
+rival(player1,player2).
+rival(player2,player1).
+
+//Para averiguar si una columna está llena
+ocupada(7,Columna):- (tablero(7, Columna,16) | tablero(7,Columna,17)). 
+				
+// Busca una casilla vac�a en el medio
+posicionInicio(Fila,Columna) :- (tablero(Fila,Columna,0) & Fila > 3 & Fila < 6 & Columna > 3 & Columna < 6).
+
+
+//Primero busca 3 en diagonal, luego 3 en vertical, luego 3 en horizontal y si no puede pone 2 seguidas y para el primer caso, inicia.
+
+estrategiaG(Fila,Columna,Situacion) :- (tresSeguidas(Fila,Columna,Situacion) | tresvertical(Fila,Columna,Situacion) | treshorizontal(Fila,Columna,Situacion) |
+				dosSeguidas(Fila,Columna,Situacion) | posicionInicio(Fila,Columna)).
+				
+// Busca 2 en raya. De una posici�n concreta vamos a buscar en sus posiciones lindantes si tenemos una ficha del mismo jugador. 
+dosSeguidas(Fila,Columna,Situacion):- (tablero(Fila,Columna,0) & tablero(Fila+1,Columna+1,Situacion)|
+				tablero(Fila,Columna,0) & tablero(Fila+1,Columna-1,Situacion)|
+				tablero(Fila,Columna,0) & tablero(Fila-1,Columna+1,Situacion)|
+				tablero(Fila,Columna,0) & tablero(Fila-1,Columna-1,Situacion)|
+				tablero(Fila,Columna,0) & tablero(Fila+1,Columna,Situacion)|
+				tablero(Fila,Columna,0) & tablero(Fila-1,Columna,Situacion)|
+				tablero(Fila,Columna,0) & tablero(Fila,Columna+1,Situacion)|
+				tablero(Fila,Columna,0) & tablero(Fila,Columna-1,Situacion)).
+				
+// Buscar 3 fichas seguida en diagonal. Segun la diagonal pueda ser ascendente o  descendente, variamos el recorrido de las celdas aumentando filas, columnas, etc.
+tresSeguidas(Fila,Columna,Situacion):- (diagonalAsc3(Fila,Columna,Situacion) | tresSeguidasDesc(Fila,Columna,Situacion)).
+tresSeguidas(Fila,Columna,Situacion):- Fila < 7 & tresSeguidas(Fila+1,Columna,Situacion).
+
+tresSeguidasAscendente(Fila,Columna,Situacion):- (tablero(Fila,Columna,0) & tablero(Fila-1,Columna-1,Situacion) & tablero(Fila-2,Columna-2,Situacion))|
+						(tablero(Fila,Columna,0) & tablero(Fila+1,Columna-1,Situacion) & tablero(Fila+2,Columna-2,Situacion)).
+tresSeguidasDescendente(Fila,Columna,Situacion):- (tablero(Fila,Columna,0) & tablero(Fila-1,Columna+1,Situacion) & tablero(Fila-2,Columna+2,Situacion))|
+						(tablero(Fila,Columna,0) & tablero(Fila+1,Columna+1,Situacion) & tablero(Fila+2,Columna+2,Situacion)).
+tresSeguidasAscendente(Fila,Columna,Situacion):- Columna < 7 & tresSeguidasAsc(Fila,Columna+1,Situacion).
+tresSeguidasDescendente(Fila,Columna,Situacion):- Columna < 7 & tresSeguidasDesc(Fila,Columna+1,Situacion).
+
+
+buscaHorizontal(Fila,Columna,Situacion):- tablero(Fila,Columna,0) & not (tablero(Fila+1,Columna,Situacion) & tablero(Fila+2,Columna,Situacion) & tablero(Fila+3,Columna,Situacion)) &
+					 not (tablero(Fila-1,Columna,Situacion) & tablero(Fila+1,Columna,Situacion) & tablero(Fila+2,Columna,Situacion)) &
+					 not (tablero(Fila-2,Columna,Situacion) & tablero(Fila-1,Columna,Situacion) & tablero(Fila+1,Columna,Situacion)) &
+					 not (tablero(Fila-3,Columna,Situacion) & tablero(Fila-2,Columna,Situacion) & tablero(Fila-1,Columna,Situacion)).
+
+
+
+// Busca 3 fichas seguidas en horizontal. Recorremos la fila. 
+treshorizontal(Fila,Y,Situacion):- (tablero(Fila,Y,0) & tablero(Fila+1,Y,Situacion) & tablero(Fila+2,Y,Situacion))|
+						(tablero(Fila,Y,0) & tablero(Fila-1,Y,Situacion) & tablero(Fila-2,Y,Situacion)).
+treshorizontal(Fila,Y,Situacion):- Y < 7 & treshorizontal(Fila,Y+1,Situacion).
+
+// Buscar 3 fichas seguidas en vertical. Recorremos la columna.
+tresvertical(Fila,Columna,Situacion):- (tablero(Fila,Columna,0) & tablero(Fila,Columna+1,Situacion) & tablero(Fila,Columna+2,Situacion))|
+						(tablero(Fila,Columna,0) & tablero(Fila,Columna-1,Situacion) & tablero(Fila,Columna-2,Situacion)).
+tresvertical(Fila,Columna,Situacion):- Fila < 7 & tresvertical(Fila+1,Columna,Situacion).
+
+
+
+/* Situaciontrategia a Perder */
+//Para jugar a perder lo que decimos es que no juegue a ganar, negando las opciones diferentes validadas. 
+estrategiaP(Fila,Columna,Situacion):- (buscaHorizontal(Fila,Columna,Situacion) & buscaVertical(Fila,Columna,Situacion) & buscaDiagonal(Fila,Columna,Situacion)) | dosSeguidas(Fila,Columna,Situacion) | posicionInicio(Fila,Columna).
+
+
+buscaDiagonal(Fila,Columna,Situacion):- tablero(Fila,Columna,0) & not (tablero(Fila+1,Columna+1,Situacion) & tablero(Fila+2,Columna+2,Situacion) & tablero(Fila+3,Columna+3,Situacion)) &
+					 not (tablero(Fila-1,Columna-1,Situacion) & tablero(Fila+1,Columna+1,Situacion) & tablero(Fila+2,Columna+2,Situacion)) &
+					 not (tablero(Fila-2,Columna-2,Situacion) & tablero(Fila-1,Columna-1,Situacion) & tablero(Fila+1,Columna+1,Situacion)) &
+					 not (tablero(Fila-3,Columna-3,Situacion) & tablero(Fila-2,Columna-2,Situacion) & tablero(Fila-1,Columna-1,Situacion)) &
+					 not (tablero(Fila+1,Columna-1,Situacion) & tablero(Fila+2,Columna-2,Situacion) & tablero(Fila+3,Columna-3,Situacion)) &
+					 not (tablero(Fila-1,Columna+1,Situacion) & tablero(Fila+1,Columna-1,Situacion) & tablero(Fila+2,Columna-2,Situacion)) &
+					 not (tablero(Fila-2,Columna+2,Situacion) & tablero(Fila-1,Columna+1,Situacion) & tablero(Fila+1,Columna-1,Situacion)) &
+					 not (tablero(Fila-3,Columna+3,Situacion) & tablero(Fila-2,Columna+2,Situacion) & tablero(Fila-1,Columna+1,Situacion)).
+					 
+
+buscaVertical(Fila,Columna,Situacion):- tablero(Fila,Columna,0) & not (tablero(Fila,Columna+1,Situacion) & tablero(Fila,Columna+2,Situacion) & tablero(Fila,Columna+3,Situacion)) &
+					 not (tablero(Fila,Columna-1,Situacion) & tablero(Fila,Columna+1,Situacion) & tablero(Fila,Columna+2,Situacion)) &
+					 not (tablero(Fila,Columna-2,Situacion) & tablero(Fila,Columna-1,Situacion) & tablero(Fila,Columna+1,Situacion)) &
+					 not (tablero(Fila,Columna-3,Situacion) & tablero(Fila,Columna-2,Situacion) & tablero(Fila,Columna-1,Situacion)).
+					
+
+/* Initial goals */
+
+!start.
+
+/* Plans */
+//El jugador espera turno para jugar, si es su turno entonces juega. 
++!start : .my_name(Jugador) <- .wait(turno(Jugador));
+	!proceso.
+
+//El jugador escoge la estrategia jugar a ganar, inserta ficha.
++!proceso : .my_name(Jugador) & turno(Jugador) & estrategia(jugarAGanar) <-
+	?identificador(Jugador,Toret);
+	?estrategiaG(Fila,Columna,Toret);
+	put(Fila,Columna);
+
+	!start.
+//Si un jugador le indica al otro que tiene que jugar pero no es su turno, esperar� su turno.
++!proceso : .my_name(Jugador) & rival(Jugador,E) & turno(E)<-
+	!start.
+//Jugador jugar� con estrategia a perder e insertar� ficha. 	
++!proceso : .my_name(Jugador) & turno(Jugador) & estrategia(jugarAGanar) <- 
+	?identificador(Jugador,Toret);
+	?estrategiaP(Fila,Columna,Toret);
+	put(Fila,Columna);
+	!start.
+	

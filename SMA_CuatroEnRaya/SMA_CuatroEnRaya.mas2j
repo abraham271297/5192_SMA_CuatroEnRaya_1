@@ -1,0 +1,42 @@
+/*
+
+    sMA_CuatroEnRaya
+
+    ---------------------------
+
+
+
+    Jason Project File
+
+
+
+    This file defines the initial state of the MAS
+
+
+
+    Jason 
+
+    marzo 14, 2019 - 20:52:30
+
+*/
+
+
+
+MAS sMA_CuatroEnRaya {
+
+
+
+    infrastructure: Centralised
+
+
+    environment: Blackboard
+
+    agents:
+
+        player1;
+
+        player2;
+
+}
+
+
